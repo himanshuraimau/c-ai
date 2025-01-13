@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <json-c/json.h>
 #include "ai.h"
+#include "linked_list.h"
 
 #define PORT 8080
 
@@ -11,6 +12,8 @@ struct PostContext {
     char *buffer;
     size_t size;
 };
+
+struct LinkedList *chat_history;
 
 static enum MHD_Result handle_post_data(void *coninfo_cls, 
                                       enum MHD_ValueKind kind,
@@ -22,6 +25,14 @@ static enum MHD_Result handle_post_data(void *coninfo_cls,
                                       uint64_t off,
                                       size_t size) {
     struct PostContext *context = (struct PostContext *)coninfo_cls;
+    
+    // Acknowledge unused parameters
+    (void)kind;
+    (void)key;
+    (void)filename;
+    (void)content_type;
+    (void)transfer_encoding;
+    (void)off;
     
     char *new_buffer = realloc(context->buffer, context->size + size + 1);
     if (!new_buffer)
@@ -39,6 +50,11 @@ static void request_completed(void *cls,
                             struct MHD_Connection *connection,
                             void **con_cls,
                             enum MHD_RequestTerminationCode toe) {
+    // Acknowledge unused parameters
+    (void)cls;
+    (void)connection;
+    (void)toe;
+    
     struct PostContext *context = *con_cls;
     if (context) {
         if (context->buffer)
@@ -56,6 +72,9 @@ static enum MHD_Result handle_request(void *cls,
                           const char *upload_data,
                           size_t *upload_data_size,
                           void **con_cls) {
+    // Acknowledge unused parameters
+    (void)cls;
+    (void)version;
     
     if (*con_cls == NULL) {
         struct PostContext *context = calloc(1, sizeof(struct PostContext));
@@ -80,9 +99,15 @@ static enum MHD_Result handle_request(void *cls,
         json_object_object_get_ex(parsed_json, "message", &message_obj);
         const char *message = json_object_get_string(message_obj);
 
+        // Add user message to chat history
+        add_message(chat_history, message);
+
         // Get AI response
         char *ai_response = get_ai_response(message);
         
+        // Add AI response to chat history
+        add_message(chat_history, ai_response);
+
         // Create JSON response
         char *response_json;
         asprintf(&response_json, "{\"response\": %s}", ai_response);
@@ -174,6 +199,7 @@ static enum MHD_Result handle_request(void *cls,
 
 int main() {
     init_ai();
+    chat_history = create_list();
     
     struct MHD_Daemon *daemon;
     daemon = MHD_start_daemon(MHD_USE_INTERNAL_POLLING_THREAD, PORT, NULL, NULL,
@@ -190,5 +216,6 @@ int main() {
     
     MHD_stop_daemon(daemon);
     cleanup_ai();
+    free_list(chat_history);
     return 0;
 }

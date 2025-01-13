@@ -1,1 +1,23 @@
+# Compiled object files
+*.o
+
+# Compiled dynamic libraries
+*.so
+
+# Compiled static libraries
+*.a
+
+# Executable files
 server
+
+# Temporary files
+*.tmp
+*.log
+
+# Backup files
+*.bak
+*.swp
+
+# Directory for build artifacts
+/build/
+.env
