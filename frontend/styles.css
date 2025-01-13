@@ -1,62 +1,103 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
     margin: 0;
-    padding: 20px;
-    background-color: #f0f0f0;
+    padding: 0;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
 .chat-container {
-    max-width: 800px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: 600px;
+    height: 80vh;
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-title {
+    text-align: center;
+    background: #007bff;
+    color: white;
+    padding: 15px;
+    margin: 0;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    font-size: 24px;
+    font-weight: bold;
 }
 
 .chat-box {
-    height: 500px;
-    overflow-y: auto;
+    flex: 1;
     padding: 20px;
+    overflow-y: auto;
     border-bottom: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .input-container {
     display: flex;
-    padding: 20px;
-    gap: 10px;
+    padding: 15px;
+    background: #f1f1f1;
+    border-top: 1px solid #eee;
 }
 
 input {
     flex: 1;
     padding: 10px;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: 20px;
     font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+input:focus {
+    border-color: #007bff;
 }
 
 button {
     padding: 10px 20px;
+    margin-left: 10px;
     background: #007bff;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 20px;
     cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background: #0056b3;
 }
 
 .message {
     margin-bottom: 15px;
-    padding: 10px;
-    border-radius: 4px;
+    padding: 10px 15px;
+    border-radius: 20px;
+    max-width: 70%;
+    word-wrap: break-word;
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .user-message {
     background: #007bff;
     color: white;
-    margin-left: 20%;
+    align-self: flex-end;
 }
 
 .bot-message {
     background: #e9ecef;
     color: black;
-    margin-right: 20%;
+    align-self: flex-start;
 }
