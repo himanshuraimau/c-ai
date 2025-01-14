@@ -77,7 +77,7 @@ char* get_ai_response(const char* input, const char* history) {
     resp.size = 0;
 
     snprintf(url, sizeof(url), 
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=%s",
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=%s",
         api_key);
     
     curl = curl_easy_init();
