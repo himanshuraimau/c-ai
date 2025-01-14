@@ -18,4 +18,7 @@ struct LinkedList* create_list();
 void add_message(struct LinkedList *list, const char *message);
 void free_list(struct LinkedList *list);
 
+// Add this new function declaration
+char* get_chat_history(struct LinkedList *list, int max_messages);
+
 #endif

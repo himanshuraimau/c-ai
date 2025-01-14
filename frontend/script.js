@@ -27,8 +27,8 @@ async function sendMessage() {
         });
         
         const data = await response.json();
-        // Extract the actual text from the nested response
-        const aiText = data.response.candidates[0].content.parts[0].text;
+        // Clean up the response by removing "Assistant:" prefix
+        const aiText = data.response.replace(/^Assistant:\s*/g, '').trim();
         appendMessage(aiText, false);
     } catch (error) {
         appendMessage('Error: Could not connect to server', false);

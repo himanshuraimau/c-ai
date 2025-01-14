@@ -9,7 +9,8 @@ struct ResponseData {
     size_t size;
 };
 
-char* get_ai_response(const char* input);
+// Update function declaration to include history parameter
+char* get_ai_response(const char* input, const char* history);
 void cleanup_ai();
 void init_ai();
 

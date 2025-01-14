@@ -99,23 +99,29 @@ static enum MHD_Result handle_request(void *cls,
         json_object_object_get_ex(parsed_json, "message", &message_obj);
         const char *message = json_object_get_string(message_obj);
 
+        // Get chat history before adding new message
+        char *history = get_chat_history(chat_history, 10); // Last 10 messages
+        
         // Add user message to chat history
         add_message(chat_history, message);
 
-        // Get AI response
-        char *ai_response = get_ai_response(message);
+        // Get AI response with history context
+        char *ai_response = get_ai_response(message, history);
+        free(history);
         
         // Add AI response to chat history
         add_message(chat_history, ai_response);
 
-        // Create JSON response
-        char *response_json;
-        asprintf(&response_json, "{\"response\": %s}", ai_response);
-        free(ai_response);
-
+        // Create JSON response after getting AI response
+        struct json_object *response_obj = json_object_new_object();
+        json_object_object_add(response_obj, "response", json_object_new_string(ai_response));
+        
+        const char *response_str = json_object_to_json_string(response_obj);
+        char *response_copy = strdup(response_str);
+        
         struct MHD_Response *response = MHD_create_response_from_buffer(
-            strlen(response_json),
-            (void*)response_json,
+            strlen(response_copy),
+            (void*)response_copy,
             MHD_RESPMEM_MUST_FREE);
 
         MHD_add_response_header(response, "Content-Type", "application/json");
@@ -123,6 +129,7 @@ static enum MHD_Result handle_request(void *cls,
         
         int ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
         MHD_destroy_response(response);
+        json_object_put(response_obj);
         json_object_put(parsed_json);
         
         return ret;

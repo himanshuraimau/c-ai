@@ -3,9 +3,11 @@
 #include <string.h>
 #include <curl/curl.h>
 #include "ai.h"
+#include <json-c/json.h>
 
-#define CHAT_INPUT_MAX 1024
-#define MAX_HISTORY 10000
+#define CHAT_INPUT_MAX 20480
+#define MAX_HISTORY 40000
+#define API_MAX_TOKENS 30720  // Gemini Pro has a 30.7K token context window
 
 size_t write_callback(void *contents, size_t size, size_t nmemb, void *userp) {
     size_t realsize = size * nmemb;
@@ -32,17 +34,26 @@ void get_user_input(char *buffer, int max_size) {
     buffer[strcspn(buffer, "\n")] = 0;
 }
 
-// Function to create request payload
-char* create_json_payload(const char *input) {
-    char *json = malloc(CHAT_INPUT_MAX * 2);
-    snprintf(json, CHAT_INPUT_MAX * 2,
+// Update create_json_payload to accept history
+char* create_json_payload(const char *input, const char *history) {
+    // Calculate approximate size needed - use 4x for safety
+    size_t needed_size = strlen(history) + strlen(input) + 256;
+    char *json = malloc(needed_size);
+    
+    // Ensure we're not exceeding reasonable limits
+    if (strlen(history) > MAX_HISTORY) {
+        // Truncate history from the end to keep most recent
+        history = history + strlen(history) - MAX_HISTORY;
+    }
+    
+    snprintf(json, needed_size,
         "{"
         "\"contents\": [{"
         "    \"parts\": [{"
-        "        \"text\": \"%s\""
+        "        \"text\": \"Previous conversation:\\n%s\\nUser: %s\""
         "    }]"
         "}]"
-        "}", input);
+        "}", history, input);
     return json;
 }
 
@@ -54,7 +65,8 @@ void cleanup_ai() {
     curl_global_cleanup();
 }
 
-char* get_ai_response(const char* input) {
+// Update get_ai_response to use history
+char* get_ai_response(const char* input, const char* history) {
     CURL *curl;
     CURLcode res;
     struct ResponseData resp;
@@ -77,7 +89,7 @@ char* get_ai_response(const char* input) {
     struct curl_slist *headers = NULL;
     headers = curl_slist_append(headers, "Content-Type: application/json");
     
-    char *json_data = create_json_payload(input);
+    char *json_data = create_json_payload(input, history);
     
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
@@ -86,6 +98,9 @@ char* get_ai_response(const char* input) {
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&resp);
     
     res = curl_easy_perform(curl);
+    
+    // Add debug print
+    printf("Raw API Response:\n%s\n", resp.data);
     
     free(json_data);
     curl_slist_free_all(headers);
@@ -97,5 +112,30 @@ char* get_ai_response(const char* input) {
         return error;
     }
 
-    return resp.data;
+    // Parse the JSON response to extract the actual message
+    struct json_object *parsed_json = json_tokener_parse(resp.data);
+    if (!parsed_json) {
+        free(resp.data);
+        return strdup("Error parsing JSON response");
+    }
+
+    // Navigate through the JSON structure
+    struct json_object *candidates, *first_candidate, *content, *parts, *first_part, *text;
+    
+    json_object_object_get_ex(parsed_json, "candidates", &candidates);
+    first_candidate = json_object_array_get_idx(candidates, 0);
+    json_object_object_get_ex(first_candidate, "content", &content);
+    json_object_object_get_ex(content, "parts", &parts);
+    first_part = json_object_array_get_idx(parts, 0);
+    json_object_object_get_ex(first_part, "text", &text);
+
+    // Get the actual response text
+    const char *response_text = json_object_get_string(text);
+    char *final_response = strdup(response_text);
+
+    // Cleanup
+    json_object_put(parsed_json);
+    free(resp.data);
+
+    return final_response;
 }

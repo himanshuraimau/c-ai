@@ -29,3 +29,25 @@ void free_list(struct LinkedList *list) {
     }
     free(list);
 }
+
+char* get_chat_history(struct LinkedList *list, int max_messages) {
+    char *history = malloc(10000); // Allocate reasonable buffer
+    history[0] = '\0';
+    
+    struct ListNode *current = list->head;
+    int count = 0;
+    
+    while (current != NULL && count < max_messages) {
+        if (count % 2 == 0) {
+            strcat(history, "User: ");
+        } else {
+            strcat(history, "Assistant: ");
+        }
+        strcat(history, current->message);
+        strcat(history, "\n");
+        current = current->next;
+        count++;
+    }
+    
+    return history;
+}
