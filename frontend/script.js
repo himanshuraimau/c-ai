@@ -1,20 +1,20 @@
 function appendMessage(message, isUser) {
-    const chatBox = document.getElementById('chatBox');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+    const chatBox = document.getElementById('chatBox'); // Chat box element
+    const messageDiv = document.createElement('div'); // New message div
+    messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`; // Set class based on user or bot
     messageDiv.textContent = message;
 
-    chatBox.appendChild(messageDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
+    chatBox.appendChild(messageDiv); // Append message to chat box
+    chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
 }
 
 async function sendMessage() {
-    const input = document.getElementById('userInput');
+    const input = document.getElementById('userInput'); // User input element
     const message = input.value.trim();
     
     if (message === '') return;
     
-    appendMessage(message, true);
+    appendMessage(message, true); // Append user message
     input.value = '';
 
     try {
@@ -23,21 +23,20 @@ async function sendMessage() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ message: message })
+            body: JSON.stringify({ message: message }) // Send message to server
         });
         
         const data = await response.json();
-        // Clean up the response by removing "Assistant:" prefix
-        const aiText = data.response.replace(/^Assistant:\s*/g, '').trim();
-        appendMessage(aiText, false);
+        const aiText = data.response.replace(/^Assistant:\s*/g, '').trim(); // Clean up AI response
+        appendMessage(aiText, false); // Append AI response
     } catch (error) {
-        appendMessage('Error: Could not connect to server', false);
+        appendMessage('Error: Could not connect to server', false); // Handle error
         console.error('Error:', error);
     }
 }
 
 document.getElementById('userInput').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
-        sendMessage();
+        sendMessage(); // Send message on Enter key press
     }
 });

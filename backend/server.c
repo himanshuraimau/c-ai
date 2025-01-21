@@ -6,14 +6,14 @@
 #include "ai.h"
 #include "linked_list.h"
 
-#define PORT 8080
+#define PORT 8080 // Server port
 
 struct PostContext {
-    char *buffer;
-    size_t size;
+    char *buffer; // Buffer to store POST data
+    size_t size; // Size of the buffer
 };
 
-struct LinkedList *chat_history;
+struct LinkedList *chat_history; // Chat history linked list
 
 static enum MHD_Result handle_post_data(void *coninfo_cls, 
                                       enum MHD_ValueKind kind,
@@ -205,8 +205,8 @@ static enum MHD_Result handle_request(void *cls,
 }
 
 int main() {
-    init_ai();
-    chat_history = create_list();
+    init_ai(); // Initialize AI
+    chat_history = create_list(); // Create chat history list
     
     struct MHD_Daemon *daemon;
     daemon = MHD_start_daemon(MHD_USE_INTERNAL_POLLING_THREAD, PORT, NULL, NULL,
@@ -222,7 +222,7 @@ int main() {
     getchar();
     
     MHD_stop_daemon(daemon);
-    cleanup_ai();
-    free_list(chat_history);
+    cleanup_ai(); // Cleanup AI
+    free_list(chat_history); // Free chat history list
     return 0;
 }

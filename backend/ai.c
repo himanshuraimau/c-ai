@@ -5,12 +5,15 @@
 #include "ai.h"
 #include <json-c/json.h>
 
-#define CHAT_INPUT_MAX 20480
-#define MAX_HISTORY 40000
-#define API_MAX_TOKENS 30720  // Gemini Pro has a 30.7K token context window
+#define CHAT_INPUT_MAX 20480 // Max input size
+#define MAX_HISTORY 40000 // Max history size
+#define API_MAX_TOKENS 307200 // API max tokens
+
+
+// Define the struct completely in the source file
 
 size_t write_callback(void *contents, size_t size, size_t nmemb, void *userp) {
-    size_t realsize = size * nmemb;
+    size_t realsize = size *nmemb;
     struct ResponseData *resp = (struct ResponseData *)userp;
     
     char *ptr = realloc(resp->data, resp->size + realsize + 1);
@@ -58,11 +61,11 @@ char* create_json_payload(const char *input, const char *history) {
 }
 
 void init_ai() {
-    curl_global_init(CURL_GLOBAL_ALL);
+    curl_global_init(CURL_GLOBAL_ALL); // Initialize CURL
 }
 
 void cleanup_ai() {
-    curl_global_cleanup();
+    curl_global_cleanup(); // Cleanup CURL
 }
 
 // Update get_ai_response to use history
@@ -70,7 +73,7 @@ char* get_ai_response(const char* input, const char* history) {
     CURL *curl;
     CURLcode res;
     struct ResponseData resp;
-    const char *api_key = "";
+    const char *api_key = ""; // API key
     char url[256];
     
     resp.data = malloc(1);
@@ -99,7 +102,7 @@ char* get_ai_response(const char* input, const char* history) {
     
     res = curl_easy_perform(curl);
     
-    // Add debug print
+    
     printf("Raw API Response:\n%s\n", resp.data);
     
     free(json_data);

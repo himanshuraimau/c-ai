@@ -26,7 +26,7 @@ sudo yum install gcc libcurl-devel json-c-devel python3
 
 Replace the placeholder API key in the `ai.c` file at line 36 with your Gemini Pro API key:
 ```c
-const char *api_key = "your_gemini_pro_api_key_here";
+const char *api_key = "your_gemini_pro_api_key_here"; // Placeholder for API key
 ```
 
 
@@ -37,14 +37,14 @@ const char *api_key = "your_gemini_pro_api_key_here";
 ```bash
 cd backend
 make
-./server
+./server // Start the backend server
 ```
 
 ### Frontend
 
 ```bash
 cd frontend
-python -m http.server
+python -m http.server // Start the frontend server
 ```
 
 ## Configuration
